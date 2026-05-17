@@ -30,11 +30,18 @@ jobs:
       - name: Package
         shell: pwsh
         run: |
-          $zip = Get-ChildItem -Path target -Filter "*.zip" -Recurse |
-            Where-Object { $_.FullName -match "dx" } |
-            Select-Object -First 1
-          if (-not $zip) { throw "bundle zip not found" }
-          Copy-Item $zip.FullName -Destination "websearch-launcher-windows-x86_64.zip"
+          # dx bundle の出力先を特定して ZIP に圧縮する
+          $bundleDir = "target/dx/websearch-launcher/release/bundle"
+          if (-not (Test-Path $bundleDir)) {
+            # フォールバック: bundle ディレクトリをツリー検索
+            $found = Get-ChildItem -Path target -Filter "bundle" -Directory -Recurse |
+              Select-Object -First 1
+            if (-not $found) { throw "bundle directory not found" }
+            $bundleDir = $found.FullName
+          }
+          Write-Host "Bundle dir: $bundleDir"
+          Get-ChildItem -Path $bundleDir -Recurse | Select-Object FullName
+          Compress-Archive -Path "$bundleDir\*" -DestinationPath "websearch-launcher-windows-x86_64.zip" -Force
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
