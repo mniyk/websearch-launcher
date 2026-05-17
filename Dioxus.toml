@@ -1,0 +1,7 @@
+[application]
+name = "websearch-launcher"
+default_platform = "desktop"
+
+[bundle]
+identifier = "com.mniyk.websearch-launcher"
+publisher = "mniyk"
